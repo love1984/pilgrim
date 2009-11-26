@@ -66,7 +66,7 @@ class FTEXImageFile(ImageFile.ImageFile):
 		header = StringIO(self.fp.read(24))
 		magic = header.read(4)
 		if magic != "FTEX":
-			raise SyntaxError("not a FTEX file")
+			raise ValueError("not a FTEX file")
 		version = unpack("i", header.read(4))
 		self.size = unpack("ii", header.read(8))
 		linesize = (self.size[0] + 3) / 4 * 8
