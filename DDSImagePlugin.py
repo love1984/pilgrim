@@ -37,7 +37,7 @@
 
 import Image
 import ImageFile
-from struct import pack, unpack
+from struct import unpack
 
 from decoders import dxt1
 
