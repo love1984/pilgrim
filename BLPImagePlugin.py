@@ -47,7 +47,7 @@ class BLPImageFile(ImageFile.ImageFile):
 		linesize = (self.size[0] + 3) / 4 * 8
 		self.mode = "RGB"
 		self.tile = []
-		if type == 1:
+		if type == 1: # Uncompressed or DirectX compression
 			if encoding == 1: # uncompressed
 				self.fp.seek(offsets[1])
 				data = StringIO(self.fp.read(lengths[1]))
@@ -63,13 +63,15 @@ class BLPImageFile(ImageFile.ImageFile):
 				return self.fromstring("".join(data))
 			elif encoding == 2: # directx compression
 				data = []
-				self.fp.seek(offsets[1])
+				self.fp.seek(offsets[0])
 				#data.append(dxt1.decodeDXT1(self.fp.read(lengths[1])))
 				for yb in xrange((self.size[1] + 3) / 4):
 					decoded = dxt1.decodeDXT1(self.fp.read(linesize))
 					for d in decoded:
-						data.append(d[:self.size[0]*3])
-				data = "".join(data[:self.size[1]])
+						data.append(d)
+						#data.append(d[:self.size[0]*3])
+				#data = "".join(data[:self.size[1]])
+				data = "".join(data)
 				self.im = Image.core.new(self.mode, self.size)
 				return self.fromstring(data)
 
