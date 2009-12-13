@@ -65,12 +65,18 @@ class BLPImageFile(ImageFile.ImageFile):
 				data = []
 				self.fp.seek(offsets[0])
 				#data.append(dxt1.decodeDXT1(self.fp.read(lengths[1])))
-				for yb in xrange((self.size[1] + 3) / 4):
-					decoded = dxt1.decodeDXT1(self.fp.read(linesize))
-					for d in decoded:
-						data.append(d)
-						#data.append(d[:self.size[0]*3])
-				#data = "".join(data[:self.size[1]])
+				if alphaEncoding == 0: # DXT1
+					for yb in xrange((self.size[1] + 3) / 4):
+						decoded = dxt1.decodeDXT1(self.fp.read(linesize))
+						for d in decoded:
+							data.append(d)
+				
+				elif alphaEncoding == 7: # DXT5
+					for yb in xrange((self.size[1] + 3) / 4):
+						decoded = dxt5.decodeDXT5(self.fp.read(linesize))
+						for d in decoded:
+							data.append(d)
+				
 				data = "".join(data)
 				self.im = Image.core.new(self.mode, self.size)
 				return self.fromstring(data)

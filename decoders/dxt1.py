@@ -34,17 +34,17 @@ def decodeDXT1(data):
 				control = bits & 3
 				bits = bits >> 2
 				if control == 0:
-					out[yo] += chr(r0) + chr(g0) + chr(b0)
+					out[yo] += chr(b0) + chr(g0) + chr(r0)
 				elif control == 1:
-					out[yo] += chr(r1) + chr(g1) + chr(b1)
+					out[yo] += chr(b1) + chr(g1) + chr(r1)
 				elif control == 2:
 					if c0 > c1:
-						out[yo] += chr((2 * r0 + r1) / 3) + chr((2 * g0 + g1) / 3) + chr((2 * b0 + b1) / 3)
+						out[yo] += chr((2 * b0 + b1) / 3) + chr((2 * g0 + g1) / 3) + chr((2 * r0 + r1) / 3)
 					else:
-						out[yo] += chr((r0 + r1) / 2) + chr((g0 + g1) / 2) + chr((b0 + b1) / 2)
+						out[yo] += chr((b0 + b1) / 2) + chr((g0 + g1) / 2) + chr((r0 + r1) / 2)
 				elif control == 3:
 					if c0 > c1:
-						out[yo] += chr((2 * r1 + r0) / 3) + chr((2 * g1 + g0) / 3) + chr((2 * b1 + b0) / 3)
+						out[yo] += chr((2 * b1 + b0) / 3) + chr((2 * g1 + g0) / 3) + chr((2 * r1 + r0) / 3)
 					else:
 						out[yo] += "\0\0\0"
 	return tuple(out)
