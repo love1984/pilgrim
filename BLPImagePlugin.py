@@ -3,7 +3,7 @@
 
 import Image
 import ImageFile
-from struct import pack, unpack
+from struct import pack, unpack, error as StructError
 from cStringIO import StringIO
 
 from decoders import dxt1, dxt5
@@ -19,9 +19,10 @@ def getpalette(string):
 	palette = []
 	while True:
 		try:
-			palette.append(unpack("4B", string.read(4)))
+			palette.append(unpack("<4B", string.read(4)))
 		except Exception:
 			break
+	print palette
 	return palette
 
 class BLPImageFile(ImageFile.ImageFile):
@@ -47,23 +48,23 @@ class BLPImageFile(ImageFile.ImageFile):
 		self.mode = "RGB"
 		self.tile = []
 		if type == 1: # Uncompressed or DirectX compression
+			data = []
+			self.fp.seek(offsets[0])
 			if encoding == 1: # uncompressed
-				self.fp.seek(offsets[1])
-				data = StringIO(self.fp.read(lengths[1]))
-				_data = []
+				print lengths[0]
+				_data = StringIO(self.fp.read(lengths[0]))
 				while True:
 					try:
-						offset, = unpack("B", data.read(1))
-					except Exception:
+						offset, = unpack("B", _data.read(1))
+					except StructError:
 						break
-					r, g, b, a = palette[offset]
-					_data.append(pack("iii", r, g, b))
-				self.im = Image.core.new(self.mode, self.size)
-				return self.fromstring("".join(data))
+					b, g, r, a = palette[offset]
+					if b > 5:
+						pass
+#						print b, g, r, a
+					data.append(pack("BBB", r, g, b))
+			
 			elif encoding == 2: # directx compression
-				data = []
-				self.fp.seek(offsets[0])
-				#data.append(dxt1.decodeDXT1(self.fp.read(lengths[1])))
 				if alphaEncoding == 0: # DXT1
 					linesize = (self.size[0] + 3) / 4 * 8
 					for yb in xrange((self.size[1] + 3) / 4):
@@ -71,7 +72,7 @@ class BLPImageFile(ImageFile.ImageFile):
 						for d in decoded:
 							data.append(d)
 				
-				elif alphaEncoding in (1, 7): # DXT5
+				elif alphaEncoding in (1, 7): # DXT3, DXT5
 					linesize = (self.size[0] + 3) / 4 * 16
 					self.mode = "RGBA"
 					for yb in xrange((self.size[1] + 3) / 4):
@@ -82,9 +83,11 @@ class BLPImageFile(ImageFile.ImageFile):
 				else:
 					raise NotImplementedError
 				
-				data = "".join(data)
-				self.im = Image.core.new(self.mode, self.size)
-				return self.fromstring(data)
+			data = "".join(data)
+			self.im = Image.core.new(self.mode, self.size)
+			return self.fromstring(data)
+		else:
+			raise NotImplementedError
 
 Image.register_open("BLP", BLPImageFile)
 Image.register_extension("BLP", ".blp")
