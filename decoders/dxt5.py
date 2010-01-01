@@ -8,7 +8,7 @@ def decodeDXT5(data):
 	"""
 	
 	blocks = len(data) / 16  # number of blocks in row
-	finalColor = ['', '', '', '']  # row accumulators
+	finalColor = ["", "", "", ""]  # row accumulators
 	
 	for block in xrange(blocks):
 		block = data[block*16:block*16+16]

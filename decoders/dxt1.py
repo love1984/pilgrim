@@ -8,11 +8,11 @@ def decodeDXT1(data, alpha=False):
 	"""
 	
 	blocks = len(data) / 8  # number of blocks in row
-	finalColor = ['', '', '', '']  # row accumulators
+	finalColor = ["", "", "", ""]  # row accumulators
 	
 	for block in xrange(blocks):
 		# Decode next 8-byte block.
-		color0, color1, bits = unpack('<HHI', data[block*8:block*8+8])
+		color0, color1, bits = unpack("<HHI", data[block*8:block*8+8])
 		
 		# color 0, packed 5-6-5
 		r0 = ((color0 >> 11) & 0x1f) << 3
