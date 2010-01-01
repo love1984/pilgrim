@@ -6,7 +6,7 @@ import ImageFile
 from struct import pack, unpack
 from cStringIO import StringIO
 
-from decoders import dxt1
+from decoders import dxt1, dxt5
 
 ##
 # Blizzard Mipmap Format
@@ -44,7 +44,6 @@ class BLPImageFile(ImageFile.ImageFile):
 		palette = getpalette(StringIO(self.fp.read(256*4)))
 		print "type: %i, encoding: %i, aEncoding: %i, aDepth: %i" % (type, encoding, alphaEncoding, alphaDepth)
 		
-		linesize = (self.size[0] + 3) / 4 * 8
 		self.mode = "RGB"
 		self.tile = []
 		if type == 1: # Uncompressed or DirectX compression
@@ -66,12 +65,14 @@ class BLPImageFile(ImageFile.ImageFile):
 				self.fp.seek(offsets[0])
 				#data.append(dxt1.decodeDXT1(self.fp.read(lengths[1])))
 				if alphaEncoding == 0: # DXT1
+					linesize = (self.size[0] + 3) / 4 * 8
 					for yb in xrange((self.size[1] + 3) / 4):
 						decoded = dxt1.decodeDXT1(self.fp.read(linesize))
 						for d in decoded:
 							data.append(d)
 				
 				elif alphaEncoding == 7: # DXT5
+					linesize = (self.size[0] + 3) / 4 * 16
 					for yb in xrange((self.size[1] + 3) / 4):
 						decoded = dxt5.decodeDXT5(self.fp.read(linesize))
 						for d in decoded:
