@@ -1,5 +1,26 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+"""
+Independence War 2: Edge Of Chaos - Texture File Format
+Copyright © 2001 Particle Systems Ltd, All Rights Reserved.
+Version 1.0
+16 October 2001
+
+The textures used for 3D objects in Independence War 2: Edge Of Chaos are in a
+packed custom format called FTEX. This file format uses file extensions FTC and FTU.
+
+* FTC files are compressed textures (using standard texture compression).
+* FTU files are not compressed.
+
+The game will happily use IFF format textures if they are present, but the
+packed textures are used to decrease load times (compressing textures on the fly is
+expensive) and give better image quality, since the mipmaps can be generated offline
+using a slow but effective filter.
+
+This document describes the FTEX file format specification for those users who are
+interested in converting the game’s textures into an editable form, or who want to
+convert their own textures into the game’s optimal format.
+"""
 
 import Image
 import ImageFile
@@ -7,28 +28,6 @@ from struct import unpack
 from cStringIO import StringIO
 
 from decoders import dxt1
-
-##
-# Independence War 2: Edge Of Chaos - Texture File Format
-# Copyright © 2001 Particle Systems Ltd, All Rights Reserved.
-# Version 1.0
-# 16 October 2001
-#
-# The textures used for 3D objects in Independence War 2: Edge Of Chaos are in a
-# packed custom format called FTEX. This file format uses file extensions FTC and FTU.
-#
-# * FTC files are compressed textures (using standard texture compression).
-# * FTU files are not compressed.
-#
-# The game will happily use IFF format textures if they are present, but the
-# packed textures are used to decrease load times (compressing textures on the fly is
-# expensive) and give better image quality, since the mipmaps can be generated offline
-# using a slow but effective filter.
-#
-# This document describes the FTEX file format specification for those users who are
-# interested in converting the game’s textures into an editable form, or who want to
-# convert their own textures into the game’s optimal format.
-#
 
 class FTEXImageFile(ImageFile.ImageFile):
 	"""

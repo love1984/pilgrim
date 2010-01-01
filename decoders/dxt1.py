@@ -26,7 +26,6 @@ def decodeDXT1(data, alpha=False):
 		
 		# Decode this block into 4x4 pixels
 		# Accumulate the results onto our 4 row accumulators
-		
 		for j in xrange(4):
 			for i in xrange(4):
 				# get next control op and generate a pixel
