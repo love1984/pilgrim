@@ -15,10 +15,9 @@ def decodeDXT5(data):
 		# Decode next 16-byte block.
 		alpha0, alpha1 = unpack("<BB", block[:2])
 		
-		bits, = unpack("<H", block[2:4])
-		#alphaCode1 = bits[2] | (bits[3] << 8) | (bits[4] << 16) | (bits[5] << 24)
-		#alphaCode2 = bits[0] | (bits[1] << 8)
-		alphaCode1, alphaCode2 = 0, 0
+		bits = unpack("<14B", block[2:])
+		alphaCode1 = bits[2] | (bits[3] << 8) | (bits[4] << 16) | (bits[5] << 24)
+		alphaCode2 = bits[0] | (bits[1] << 8)
 		
 		color0, color1 = unpack("<HH", block[8:12])
 		
@@ -64,12 +63,12 @@ def decodeDXT5(data):
 				colorCode = (code >> 2*(4*j+i)) & 0x03
 				
 				if colorCode == 0:
-					finalColor[j] += chr(r0) + chr(g0) + chr(b0) #+ chr(finalAlpha)
+					finalColor[j] += chr(r0) + chr(g0) + chr(b0) + chr(finalAlpha)
 				elif colorCode == 1:
-					finalColor[j] += chr(r1) + chr(g1) +  chr(b1) #+ chr(finalAlpha)
+					finalColor[j] += chr(r1) + chr(g1) +  chr(b1) + chr(finalAlpha)
 				elif colorCode == 2:
-					finalColor[j] += chr((2*r0+r1)/3) + chr((2*g0+g1)/3) + chr((2*b0+b1)/3) # + chr(finalAlpha)
+					finalColor[j] += chr((2*r0+r1)/3) + chr((2*g0+g1)/3) + chr((2*b0+b1)/3) + chr(finalAlpha)
 				elif colorCode == 3:
-					finalColor[j] += chr((r0+2*r1)/3) + chr((g0+2*g1)/3) + chr((b0+2*b1)/3) # + chr(finalAlpha)
+					finalColor[j] += chr((r0+2*r1)/3) + chr((g0+2*g1)/3) + chr((b0+2*b1)/3) + chr(finalAlpha)
 	
 	return tuple(finalColor)

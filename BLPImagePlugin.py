@@ -73,6 +73,7 @@ class BLPImageFile(ImageFile.ImageFile):
 				
 				elif alphaEncoding == 7: # DXT5
 					linesize = (self.size[0] + 3) / 4 * 16
+					self.mode = "RGBA"
 					for yb in xrange((self.size[1] + 3) / 4):
 						decoded = dxt5.decodeDXT5(self.fp.read(linesize))
 						for d in decoded:
