@@ -4,12 +4,11 @@ from struct import unpack
 
 def decodeDXT1(data):
 	"""
-	Python-only DXT1 decoder; this is slow!
-	Better to use _dxt1.decodeDXT1 if you can
 	input: one "row" of data (i.e. will produce 4*width pixels)
 	"""
+	
 	blocks = len(data) / 8  # number of blocks in row
-	out = ['', '', '', '']  # row accumulators
+	finalColor = ['', '', '', '']  # row accumulators
 	
 	for block in xrange(blocks):
 		# Decode next 8-byte block.
@@ -34,17 +33,18 @@ def decodeDXT1(data):
 				control = bits & 3
 				bits = bits >> 2
 				if control == 0:
-					out[yo] += chr(r0) + chr(g0) + chr(b0)
+					finalColor[yo] += chr(r0) + chr(g0) + chr(b0)
 				elif control == 1:
-					out[yo] += chr(r1) + chr(g1) + chr(b1)
+					finalColor[yo] += chr(r1) + chr(g1) + chr(b1)
 				elif control == 2:
 					if color0 > color1:
-						out[yo] += chr((2 * r0 + r1) / 3) + chr((2 * g0 + g1) / 3) + chr((2 * b0 + b1) / 3)
+						finalColor[yo] += chr((2 * r0 + r1) / 3) + chr((2 * g0 + g1) / 3) + chr((2 * b0 + b1) / 3)
 					else:
-						out[yo] += chr((r0 + r1) / 2) + chr((g0 + g1) / 2) + chr((b0 + b1) / 2)
+						finalColor[yo] += chr((r0 + r1) / 2) + chr((g0 + g1) / 2) + chr((b0 + b1) / 2)
 				elif control == 3:
 					if color0 > color1:
-						out[yo] += chr((2 * r1 + r0) / 3) + chr((2 * g1 + g0) / 3) + chr((2 * b1 + b0) / 3)
+						finalColor[yo] += chr((2 * r1 + r0) / 3) + chr((2 * g1 + g0) / 3) + chr((2 * b1 + b0) / 3)
 					else:
-						out[yo] += "\0\0\0"
-	return tuple(out)
+						finalColor[yo] += "\0\0\0"
+	
+	return tuple(finalColor)

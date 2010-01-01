@@ -2,10 +2,6 @@
 
 from struct import unpack
 
-def PackRGBA(r, g, b, a):
-	return r << 24, g << 16, b << 8
-	return ((r << 24) | (g << 16) | (b << 8) | a)
-
 def decodeDXT5(data):
 	"""
 	input: one "row" of data (i.e. will produce 4*width pixels)
@@ -25,20 +21,6 @@ def decodeDXT5(data):
 		alphaCode1, alphaCode2 = 0, 0
 		
 		color0, color1 = unpack("<HH", block[8:12])
-		
-		#temp = (color0 >> 11) * 255 + 16
-		#r0 = (temp/32 + temp) / 32
-		#temp = ((color0 & 0x07E0) >> 5) * 255 + 32
-		#g0 = (temp/64 + temp) / 64
-		#temp = (color0 & 0x001F) * 255 + 16
-		#b0 = (temp/32 + temp) / 32
-		
-		#temp = (color1 >> 11) * 255 + 16
-		#r1 = (temp/32 + temp) / 32
-		#temp = ((color1 & 0x07E0) >> 5) * 255 + 32
-		#g1 = (temp/64 + temp) / 64
-		#temp = (color1 & 0x001F) * 255 + 16
-		#b1 = (temp/32 + temp) / 32
 		
 		code, = unpack("<I", block[12:])
 		
@@ -83,17 +65,11 @@ def decodeDXT5(data):
 				
 				if colorCode == 0:
 					finalColor[j] += chr(r0) + chr(g0) + chr(b0) #+ chr(finalAlpha)
-					#finalColor = PackRGBA(r0, g0, b0, finalAlpha)
 				elif colorCode == 1:
 					finalColor[j] += chr(r1) + chr(g1) +  chr(b1) #+ chr(finalAlpha)
-					#finalColor = PackRGBA(r1, g1, b1, finalAlpha)
 				elif colorCode == 2:
 					finalColor[j] += chr((2*r0+r1)/3) + chr((2*g0+g1)/3) + chr((2*b0+b1)/3) # + chr(finalAlpha)
-					#finalColor = PackRGBA((2*r0+r1)/3, (2*g0+g1)/3, (2*b0+b1)/3, finalAlpha)
 				elif colorCode == 3:
 					finalColor[j] += chr((r0+2*r1)/3) + chr((g0+2*g1)/3) + chr((b0+2*b1)/3) # + chr(finalAlpha)
-					#finalColor = PackRGBA((r0+2*r1)/3, (g0+2*g1)/3, (b0+2*b1)/3, finalAlpha)
-		
-			#finalColor[j] += 
-		
+	
 	return tuple(finalColor)
