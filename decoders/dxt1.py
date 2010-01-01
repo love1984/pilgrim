@@ -2,7 +2,7 @@
 
 from struct import unpack
 
-def decodeDXT1(data):
+def decodeDXT1(data, alpha=False):
 	"""
 	input: one "row" of data (i.e. will produce 4*width pixels)
 	"""
@@ -26,25 +26,32 @@ def decodeDXT1(data):
 		
 		# Decode this block into 4x4 pixels
 		# Accumulate the results onto our 4 row accumulators
-		for yo in xrange(4):
-			for xo in xrange(4):
+		
+		for j in xrange(4):
+			for i in xrange(4):
 				# get next control op and generate a pixel
 				
 				control = bits & 3
 				bits = bits >> 2
 				if control == 0:
-					finalColor[yo] += chr(r0) + chr(g0) + chr(b0)
+					finalColor[j] += chr(r0) + chr(g0) + chr(b0)
 				elif control == 1:
-					finalColor[yo] += chr(r1) + chr(g1) + chr(b1)
+					finalColor[j] += chr(r1) + chr(g1) + chr(b1)
 				elif control == 2:
 					if color0 > color1:
-						finalColor[yo] += chr((2 * r0 + r1) / 3) + chr((2 * g0 + g1) / 3) + chr((2 * b0 + b1) / 3)
+						finalColor[j] += chr((2 * r0 + r1) / 3) + chr((2 * g0 + g1) / 3) + chr((2 * b0 + b1) / 3)
 					else:
-						finalColor[yo] += chr((r0 + r1) / 2) + chr((g0 + g1) / 2) + chr((b0 + b1) / 2)
+						finalColor[j] += chr((r0 + r1) / 2) + chr((g0 + g1) / 2) + chr((b0 + b1) / 2)
 				elif control == 3:
 					if color0 > color1:
-						finalColor[yo] += chr((2 * r1 + r0) / 3) + chr((2 * g1 + g0) / 3) + chr((2 * b1 + b0) / 3)
+						finalColor[j] += chr((2 * r1 + r0) / 3) + chr((2 * g1 + g0) / 3) + chr((2 * b1 + b0) / 3)
 					else:
-						finalColor[yo] += "\0\0\0"
+						if alpha:
+							finalColor[j] += "\0\0\0\0"
+							continue
+						else:
+							finalColor[j] += "\0\0\0"
+				if alpha:
+					finalColor[j] += chr(0xFF)
 	
 	return tuple(finalColor)

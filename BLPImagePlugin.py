@@ -20,9 +20,8 @@ def getpalette(string):
 	while True:
 		try:
 			palette.append(unpack("<4B", string.read(4)))
-		except Exception:
+		except StructError:
 			break
-	print palette
 	return palette
 
 class BLPImageFile(ImageFile.ImageFile):
@@ -31,6 +30,12 @@ class BLPImageFile(ImageFile.ImageFile):
 	"""
 	format = "BLP"
 	format_description = "Blizzard Mipmap Format"
+	
+	def show(self):
+		path = "/home/adys/.cache/%s.png" % "tmpVfBc3s"
+		self.save(path)
+		import os
+		os.popen("eog %s" % path)
 	
 	def _open(self):
 		header = StringIO(self.fp.read(20 + 16*4 + 16*4)) # XXX
@@ -68,7 +73,11 @@ class BLPImageFile(ImageFile.ImageFile):
 				if alphaEncoding == 0: # DXT1
 					linesize = (self.size[0] + 3) / 4 * 8
 					for yb in xrange((self.size[1] + 3) / 4):
-						decoded = dxt1.decodeDXT1(self.fp.read(linesize))
+						if alphaDepth:
+							self.mode = "RGBA"
+							decoded = dxt1.decodeDXT1(self.fp.read(linesize), alpha=True)
+						else:
+							decoded = dxt1.decodeDXT1(self.fp.read(linesize))
 						for d in decoded:
 							data.append(d)
 				
