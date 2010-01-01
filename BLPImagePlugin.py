@@ -71,13 +71,16 @@ class BLPImageFile(ImageFile.ImageFile):
 						for d in decoded:
 							data.append(d)
 				
-				elif alphaEncoding == 7: # DXT5
+				elif alphaEncoding in (1, 7): # DXT5
 					linesize = (self.size[0] + 3) / 4 * 16
 					self.mode = "RGBA"
 					for yb in xrange((self.size[1] + 3) / 4):
 						decoded = dxt5.decodeDXT5(self.fp.read(linesize))
 						for d in decoded:
 							data.append(d)
+				
+				else:
+					raise NotImplementedError
 				
 				data = "".join(data)
 				self.im = Image.core.new(self.mode, self.size)
