@@ -13,12 +13,7 @@ def decodeDXT3(data):
 	for block in xrange(blocks):
 		block = data[block*16:block*16+16]
 		# Decode next 16-byte block.
-		alpha0, alpha1 = unpack("<BB", block[:2])
-		
-		bits = unpack("<14B", block[2:])
-		alphaCode1 = bits[2] | (bits[3] << 8) | (bits[4] << 16) | (bits[5] << 24)
-		alphaCode2 = bits[0] | (bits[1] << 8)
-		
+		bits = unpack("<8B", block[:8])
 		color0, color1 = unpack("<HH", block[8:12])
 		
 		code, = unpack("<I", block[12:])
@@ -32,23 +27,20 @@ def decodeDXT3(data):
 		r1 = ((color1 >> 11) & 0x1f) << 3
 		g1 = ((color1 >> 5) & 0x3f) << 2
 		b1 = (color1 & 0x1f) << 3
-		
 		for j in xrange(4):
+			high = False # Do we want the higher bits?
 			for i in xrange(4):
-				# get next control op and generate a pixel
-				alphaCodeIndex = 3*(4*j+i)
-				
-				if alphaCodeIndex <= 12:
-					alphaCode = (alphaCode2 >> alphaCodeIndex) & 0x07
-				elif alphaCodeIndex == 15:
-					alphaCode = (alphaCode2 >> 15) | ((alphaCode1 << 1) & 0x06)
-				else: # alphaCodeIndex >= 18 and alphaCodeIndex <= 45
-					alphaCode = (alphaCode1 >> (alphaCodeIndex - 16)) & 0x07
-				
-				if alphaCode == 0:
-					finalAlpha = alpha0
+				if high:
+					high = False
 				else:
-					finalAlpha = alpha1
+					high = True
+				alphaCodeIndex = (4*j+i) / 2
+				finalAlpha = bits[alphaCodeIndex]
+				if high:
+					finalAlpha &= 0xf
+				else:
+					finalAlpha >>= 4
+				finalAlpha *= 17 # We get a value between 0 and 15
 				
 				colorCode = (code >> 2*(4*j+i)) & 0x03
 				
@@ -60,5 +52,4 @@ def decodeDXT3(data):
 					finalColor[j] += chr((2*r0+r1)/3) + chr((2*g0+g1)/3) + chr((2*b0+b1)/3) + chr(finalAlpha)
 				elif colorCode == 3:
 					finalColor[j] += chr((r0+2*r1)/3) + chr((g0+2*g1)/3) + chr((b0+2*b1)/3) + chr(finalAlpha)
-	
 	return tuple(finalColor)
