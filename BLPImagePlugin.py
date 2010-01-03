@@ -89,6 +89,7 @@ class BLPImageFile(ImageFile.ImageFile):
 					data.append(pack("BBB", r, g, b))
 			
 			elif encoding == 2: # directx compression
+				print "reading as %s, alphaDepth of %i" % (("DXT1", "DXT3", "2", "3", "4", "5", "6", "DXT5")[alphaEncoding], alphaDepth)
 				if alphaEncoding == 0: # DXT1
 					linesize = (self.size[0] + 3) / 4 * 8
 					for yb in xrange((self.size[1] + 3) / 4):
