@@ -15,7 +15,7 @@ def decodeDXT5(data):
 		# Decode next 16-byte block.
 		alpha0, alpha1 = unpack("<BB", block[:2])
 		
-		bits = unpack("<14B", block[2:])
+		bits = unpack("<6B", block[2:8])
 		alphaCode1 = bits[2] | (bits[3] << 8) | (bits[4] << 16) | (bits[5] << 24)
 		alphaCode2 = bits[0] | (bits[1] << 8)
 		

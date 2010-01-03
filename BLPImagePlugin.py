@@ -86,8 +86,6 @@ class BLPImageFile(ImageFile.ImageFile):
 					except StructError:
 						break
 					b, g, r, a = palette[offset]
-					if b > 5:
-						pass
 					data.append(pack("BBB", r, g, b))
 			
 			elif encoding == 2: # directx compression
@@ -128,5 +126,5 @@ class BLPImageFile(ImageFile.ImageFile):
 		else:
 			raise NotImplementedError("JPEG BLPs are unsupported")
 
-Image.register_open("BLP", BLPImageFile)
-Image.register_extension("BLP", ".blp")
+#Image.register_open("BLP", BLPImageFile)
+#Image.register_extension("BLP", ".blp")
