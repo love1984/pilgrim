@@ -31,7 +31,7 @@ import ImageFile
 from struct import pack, unpack, error as StructError
 from cStringIO import StringIO
 
-from decoders import dxt1, dxt3, dxt5
+from decoders import dxtc as _dxtc
 
 
 def getpalette(data):
@@ -95,9 +95,9 @@ class BLPImageFile(ImageFile.ImageFile):
 					for yb in xrange((self.size[1] + 3) / 4):
 						if alphaDepth:
 							self.mode = "RGBA"
-							decoded = dxt1.decodeDXT1(self.fp.read(linesize), alpha=True)
+							decoded = _dxtc.decodeDXT1(self.fp.read(linesize), alpha=True)
 						else:
-							decoded = dxt1.decodeDXT1(self.fp.read(linesize))
+							decoded = _dxtc.decodeDXT1(self.fp.read(linesize))
 						for d in decoded:
 							data.append(d)
 				
@@ -105,7 +105,7 @@ class BLPImageFile(ImageFile.ImageFile):
 					linesize = (self.size[0] + 3) / 4 * 16
 					self.mode = "RGBA"
 					for yb in xrange((self.size[1] + 3) / 4):
-						decoded = dxt3.decodeDXT3(self.fp.read(linesize))
+						decoded = _dxtc.decodeDXT3(self.fp.read(linesize))
 						for d in decoded:
 							data.append(d)
 				
@@ -113,7 +113,7 @@ class BLPImageFile(ImageFile.ImageFile):
 					linesize = (self.size[0] + 3) / 4 * 16
 					self.mode = "RGBA"
 					for yb in xrange((self.size[1] + 3) / 4):
-						decoded = dxt5.decodeDXT5(self.fp.read(linesize))
+						decoded = _dxtc.decodeDXT5(self.fp.read(linesize))
 						for d in decoded:
 							data.append(d)
 				

@@ -27,7 +27,7 @@ import ImageFile
 from struct import unpack
 from cStringIO import StringIO
 
-from decoders import dxt1
+from decoders import dxtc
 
 class FTEXImageFile(ImageFile.ImageFile):
 	"""
@@ -80,7 +80,7 @@ class FTEXImageFile(ImageFile.ImageFile):
 				self.fp.seek(where)
 				size, = unpack("i", self.fp.read(4))
 				for yb in xrange((self.size[1] + 3) / 4):
-					decoded = dxt1.decodeDXT1(self.fp.read(linesize))
+					decoded = dxtc.decodeDXT1(self.fp.read(linesize))
 					
 					for d in decoded:
 						# Make sure that if we have a texture size that's not a
