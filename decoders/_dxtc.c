@@ -138,7 +138,7 @@ static PyObject* decodeDXT1(PyObject *self, PyObject *args) {
 }
 
 /**
- * Given the data for a single row of 4x4 blocks from a DXT1 texture, return
+ * Given the data for a single row of 4x4 blocks from a DXT3 texture, return
  * a tuple of four decoded pixel rows as strings in RGBA format.
  */
 static PyObject* decodeDXT3(PyObject *self, PyObject *args) {
@@ -152,7 +152,7 @@ static PyObject* decodeDXT3(PyObject *self, PyObject *args) {
 	
 	if (!PyArg_ParseTuple(args, "s#", &data, &len)) return NULL;
 	
-	outlen = (len / 8) * 4 * 3;
+	outlen = (len / 16) * 4 * 3;
 	for (i = 0; i < 4; ++i) {
 		outdata[i] = malloc(outlen);
 		if (outdata[i] == NULL) {
@@ -243,150 +243,10 @@ static PyObject* decodeDXT3(PyObject *self, PyObject *args) {
 	return ret;
 }
 
-/**
- * Given the data for a single row of 4x4 blocks from a DXT1 texture, return
- * a tuple of four decoded pixel rows as strings in RGBA format.
- */
-static PyObject* decodeDXT5(PyObject *self, PyObject *args) {
-	unsigned char *data;
-	int len;
-	unsigned char *outdata[4];
-	int outlen;
-	int i;
-	int emit;
-	PyObject *ret;
-	
-	if (!PyArg_ParseTuple(args, "s#", &data, &len)) return NULL;
-	
-	outlen = (len / 8) * 4 * 3;
-	for (i = 0; i < 4; ++i) {
-		outdata[i] = malloc(outlen);
-		if (outdata[i] == NULL) {
-			int j;
-			for (j = 0; j < i; ++j) free(outdata[i]);
-			
-			return PyErr_NoMemory();
-		}
-	}
-	
-	for (i = 0, emit = 0; i < len; i += 8, emit += 4) {
-		int _i, j;
-		
-		unsigned alpha0 = data[i];
-		unsigned alpha1 = data[i+1];
-		
-		unsigned color0 = data[i] | data[i+1] << 8U;
-		unsigned color1 = data[i+2] | data[i+3] << 8U;
-		char bits[7];
-		memcpy(bits, &(block[2]), 7);
-		unsigned alphaCode1 = bits[2] | (bits[3] << 8) | (bits[4] << 16) | (bits[5] << 24);
-		unsigned alphaCode2 = bits[0] | (bits[1] << 8);
-		
-		unsigned r0 = ((color0 >> 11) & 0x1f) << 3;
-		unsigned g0 = ((color0 >> 5) & 0x3f) << 2;
-		unsigned b0 = (color0 & 0x1f) << 3;
-		
-		unsigned r1 = ((color1 >> 11) & 0x1f) << 3;
-		unsigned g1 = ((color1 >> 5) & 0x3f) << 2;
-		unsigned b1 = (color1 & 0x1f) << 3;
-		
-		for (j = 0; j < 4; ++j) {
-			for (_i = 0; _i < 4; ++_i) {
-// 				alphaCodeIndex = 3*(4*j+i)
-// 				
-// 				if alphaCodeIndex <= 12:
-// 					alphaCode = (alphaCode2 >> alphaCodeIndex) & 0x07
-// 				elif alphaCodeIndex == 15:
-// 					alphaCode = (alphaCode2 >> 15) | ((alphaCode1 << 1) & 0x06)
-// 				else: # alphaCodeIndex >= 18 and alphaCodeIndex <= 45
-// 					alphaCode = (alphaCode1 >> (alphaCodeIndex - 16)) & 0x07
-// 				
-// 				if alphaCode == 0:
-// 					finalAlpha = alpha0
-// 				elif alphaCode == 1:
-// 					finalAlpha = alpha1
-// 				else:
-// 					if alpha0 > alpha1:
-// 						finalAlpha = ((8-alphaCode)*alpha0 + (alphaCode-1)*alpha1)/7
-// 					else:
-// 						if alphaCode == 6:
-// 							finalAlpha = 0
-// 						elif alphaCode == 7:
-// 							finalAlpha = 255
-// 						else:
-// 							finalAlpha = ((6-alphaCode)*alpha0 + (alphaCode-1)*alpha1)/5
-// 				
-// 				colorCode = (code >> 2*(4*j+i)) & 0x03
-				unsigned alphaCodeIndex = 3*(4*j+_i);
-				unsigned alphaCode;
-				if alphaCodeIndex <= 12 {
-					
-				}
-				/*
-				switch (control) {
-					case 0:
-						outdata[j][3*(emit + _i)] = r0;
-						outdata[j][3*(emit + _i) + 1] = g0;
-						outdata[j][3*(emit + _i) + 2] = b0;
-						break;
-					case 1:
-						outdata[j][3*(emit + _i)] = r1;
-						outdata[j][3*(emit + _i) + 1] = g1;
-						outdata[j][3*(emit + _i) + 2] = b1;
-						break;
-					case 2:
-						if (color0 > color1) {
-							outdata[j][3*(emit + _i)] = (2 * r0 + r1) / 3;
-							outdata[j][3*(emit + _i) + 1] = (2 * g0 + g1) / 3;
-							outdata[j][3*(emit + _i) + 2] = (2 * b0 + b1) / 3;
-						} else {
-							outdata[j][3*(emit + _i)] = (r0 + r1) / 2;
-							outdata[j][3*(emit + _i) + 1] = (g0 + g1) / 2;
-							outdata[j][3*(emit + _i) + 2] = (b0 + b1) / 2;
-						}
-						break;
-					case 3:
-						if (color0 > color1) {
-							outdata[j][3*(emit + _i)] = (r0 + 2 * r1) / 3;
-							outdata[j][3*(emit + _i) + 1] = (g0 + 2 * g1) / 3;
-							outdata[j][3*(emit + _i) + 2] = (b0 + 2 * b1) / 3;
-						} else {
-							outdata[j][3*(emit + _i)] = 0;
-							outdata[j][3*(emit + _i) + 1] = 0;
-							outdata[j][3*(emit + _i) + 2] = 0;
-						}
-					break;
-				}*/
-			}
-		}
-	}
-	
-	// Done. Return as strings
-	ret = PyTuple_New(4);
-	if (!ret) {
-		for (i = 0; i < 4; ++i) free(outdata[i]);
-		return NULL;
-	}
-	
-	for (i = 0; i < 4; ++i) {
-		PyObject *buf = PyString_FromStringAndSize(outdata[i], outlen);
-		if (!buf) {
-			int j;
-			for (j = i; j < 4; ++j) free(outdata[j]);
-			Py_DECREF(ret);
-			return NULL;
-		}
-		
-		PyTuple_SetItem(ret, i, buf);
-	}
-	
-	return ret;
-}
-
 static PyMethodDef functions[] = {
 	{"decodeDXT1", decodeDXT1, 1, "decodeDXT1() doc string"},
 	{"decodeDXT3", decodeDXT3, 1, "decodeDXT3() doc string"},
-	{"decodeDXT5", decodeDXT5, 1, "decodeDXT5() doc string"},
+// 	{"decodeDXT5", decodeDXT5, 1, "decodeDXT5() doc string"},
 	{NULL, NULL}
 };
 
