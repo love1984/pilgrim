@@ -67,7 +67,7 @@ class BLPImageFile(ImageFile.ImageFile):
 		magic, compression = unpack("<4si", header.read(8))
 		encoding, alphaDepth, alphaEncoding, hasMips = unpack("<4b", header.read(4))
 		self.size = unpack("<II", header.read(8))
-		type, subtype = unpack("<ii", header.read(8))
+		encoding, subtype = unpack("<ii", header.read(8))
 		offsets = unpack("<16I", header.read(16*4))
 		lengths = unpack("<16I", header.read(16*4))
 		
@@ -82,7 +82,33 @@ class BLPImageFile(ImageFile.ImageFile):
 			self.mode = image.mode
 			return
 		
-		raise NotImplementedError()
+		if compression == 1:
+			if encoding in (3, 4):
+				raise NotImplementedError
+			
+			elif encoding == 5:
+				data = []
+				palette_data = self.fp.read(256*4)
+				palette = getpalette(palette_data)
+				_data = StringIO(self.fp.read(lengths[0]))
+				self.mode = "RGB"
+				self.tile = []
+				while True:
+					try:
+						offset, = unpack("<B", _data.read(1))
+					except StructError:
+						break
+					b, g, r, a = palette[offset]
+					data.append(pack("<BBB", r, g, b))
+				
+				data = "".join(data)
+				self.im = Image.core.new(self.mode, self.size)
+				self.fromstring(data)
+				return
+			
+			raise ValueError("Expected encoding 3, 4 or 5, got %i instead" % (encoding))
+		
+		raise ValueError("Expected compression 0 or 1, got %i instead" % (compression))
 	
 	def __decode_blp2(self):
 		header = StringIO(self.fp.read(20 + 16*4 + 16*4))
@@ -104,11 +130,11 @@ class BLPImageFile(ImageFile.ImageFile):
 				_data = StringIO(self.fp.read(lengths[0]))
 				while True:
 					try:
-						offset, = unpack("B", _data.read(1))
+						offset, = unpack("<B", _data.read(1))
 					except StructError:
 						break
 					b, g, r, a = palette[offset]
-					data.append(pack("BBB", r, g, b))
+					data.append(pack("<BBB", r, g, b))
 			
 			elif encoding == 2: # directx compression
 				print "reading as %s, alphaDepth of %i" % (("DXT1", "DXT3", "2", "3", "4", "5", "6", "DXT5")[alphaEncoding], alphaDepth)
@@ -161,5 +187,3 @@ class BLPImageFile(ImageFile.ImageFile):
 
 Image.register_open("BLP", BLPImageFile)
 Image.register_extension("BLP", ".blp")
-
-del getpalette
