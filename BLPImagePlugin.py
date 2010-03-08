@@ -3,7 +3,7 @@
 """
 Blizzard Mipmap Format
 
-BLP1 files, used mostly in Warcraft III, are currently unsupported.
+BLP1 files, used mostly in Warcraft III, are not fully supported.
 All types of BLP2 files used in World of Warcraft are supported.
 
 The BLP file structure consists of a header, up to 16 mipmaps of the
@@ -15,7 +15,7 @@ The first mipmap (mipmap #0) is the full size image; each subsequent
 mipmap halves both dimensions. The final mipmap should be 1x1.
 
 BLP files come in many different flavours:
-* JPEG-compressed (type == 0)- currently not supported.
+* JPEG-compressed (type == 0) - only supported for BLP1.
 * RAW images (type == 1, encoding == 1). Each mipmap is stored as an
   array of 8-bit values, one per pixel, left to right, top to bottom.
   Each value is an index to the palette.
@@ -47,6 +47,7 @@ def getpalette(data):
 			break
 	return palette
 
+
 class BLPImageFile(ImageFile.ImageFile):
 	"""
 	Blizzard Mipmap Format
@@ -54,27 +55,48 @@ class BLPImageFile(ImageFile.ImageFile):
 	format = "BLP"
 	format_description = "Blizzard Mipmap Format"
 	
-	def show(self):
-		path = "/home/adys/.cache/%s.png" % "tmpVfBc3s"
+	def show(self): # HACK
+		path = "/home/adys/.cache/%s.jpg" % ("tmpVfBc3s")
 		self.save(path)
 		import os
 		os.popen("eog %s" % path)
 	
-	def _open(self):
-		header = StringIO(self.fp.read(20 + 16*4 + 16*4)) # XXX
-		magic = header.read(4)
-		if magic != "BLP2":
-			raise ValueError("not a BLP2 file")
-		type, = unpack("i", header.read(4))
-		encoding, alphaDepth, alphaEncoding, hasMips = unpack("4b", header.read(4))
-		self.size = unpack("ii", header.read(8))
-		offsets = unpack("16i", header.read(16*4))
-		lengths = unpack("16i", header.read(16*4))
+	def __decode_blp1(self):
+		header = StringIO(self.fp.read(28 + 16*4 + 16*4))
+		
+		magic, compression = unpack("<4si", header.read(8))
+		encoding, alphaDepth, alphaEncoding, hasMips = unpack("<4b", header.read(4))
+		self.size = unpack("<II", header.read(8))
+		type, subtype = unpack("<ii", header.read(8))
+		offsets = unpack("<16I", header.read(16*4))
+		lengths = unpack("<16I", header.read(16*4))
+		
+		if compression == 0:
+			from PIL.JpegImagePlugin import JpegImageFile
+			jpegHeaderSize, = unpack("<I", self.fp.read(4))
+			#jpegHeader = self.fp.read(jpegHeaderSize)
+			data = self.fp.read(lengths[0] + jpegHeaderSize)
+			image = JpegImageFile(StringIO(data))
+			self.tile = image.tile # PIL is terrible
+			self.fp = image.fp
+			self.mode = image.mode
+			return
+		
+		raise NotImplementedError()
+	
+	def __decode_blp2(self):
+		header = StringIO(self.fp.read(20 + 16*4 + 16*4))
+		
+		magic, compression = unpack("<4si", header.read(8))
+		encoding, alphaDepth, alphaEncoding, hasMips = unpack("<4b", header.read(4))
+		self.size = unpack("<II", header.read(8))
+		offsets = unpack("<16I", header.read(16*4))
+		lengths = unpack("<16I", header.read(16*4))
 		palette_data = self.fp.read(256*4)
 		
 		self.mode = "RGB"
 		self.tile = []
-		if type == 1: # Uncompressed or DirectX compression
+		if compression == 1: # Uncompressed or DirectX compression
 			data = []
 			self.fp.seek(offsets[0])
 			if encoding == 1: # uncompressed
@@ -120,12 +142,24 @@ class BLPImageFile(ImageFile.ImageFile):
 				else:
 					raise ValueError("Expected alphaEncoding 0, 1 or 7, got %i instead" % (alphaEncoding))
 				
-			data = "".join(data)
 			self.im = Image.core.new(self.mode, self.size)
-			return self.fromstring(data)
+			
+			data = "".join(data)
+			self.fromstring(data)
+	
+	def _open(self):
+		magic = self.fp.read(4)
+		self.fp.seek(0)
+		if magic == "BLP1":
+			return self.__decode_blp1()
 		
-		else:
-			raise NotImplementedError("JPEG BLPs are unsupported")
+		if magic == "BLP2":
+			return self.__decode_blp2()
+		
+		raise ValueError("not a BLP file (magic: %r)" % (magic))
 
-#Image.register_open("BLP", BLPImageFile)
-#Image.register_extension("BLP", ".blp")
+
+Image.register_open("BLP", BLPImageFile)
+Image.register_extension("BLP", ".blp")
+
+del getpalette
