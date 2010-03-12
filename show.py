@@ -3,8 +3,8 @@
 
 import sys
 
-from BLPImagePlugin import BLPImageFile as BLP
-from FTEXImagePlugin import FTEXImageFile as FTEX
+from pilgrim.BLPImagePlugin import BLPImageFile as BLP
+from pilgrim.FTEXImagePlugin import FTEXImageFile as FTEX
 
 usage = "Usage: %s image.{blp,ftc,...}" % (sys.argv[0])
 
