@@ -74,9 +74,14 @@ class BLPImageFile(ImageFile.ImageFile):
 		if compression == 0:
 			from PIL.JpegImagePlugin import JpegImageFile
 			jpegHeaderSize, = unpack("<I", self.fp.read(4))
-			#jpegHeader = self.fp.read(jpegHeaderSize)
-			data = self.fp.read(lengths[0] + jpegHeaderSize)
-			image = JpegImageFile(StringIO(data))
+			jpegHeader = self.fp.read(jpegHeaderSize)
+			extraData = self.fp.read(offsets[0] - self.fp.tell()) # What IS this?
+			data = self.fp.read(lengths[0])
+			data = jpegHeader + data
+			data = StringIO(data)
+			image = JpegImageFile(data)
+			image.show()
+			raw_input()
 			self.tile = image.tile # PIL is terrible
 			self.fp = image.fp
 			self.mode = image.mode
