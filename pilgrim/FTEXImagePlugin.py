@@ -81,12 +81,9 @@ class FTEXImageFile(ImageFile.ImageFile):
 				size, = unpack("i", self.fp.read(4))
 				for yb in xrange((self.size[1] + 3) / 4):
 					decoded = dxtc.decodeDXT1(self.fp.read(linesize))
-					
 					for d in decoded:
-						# Make sure that if we have a texture size that's not a
-						# multiple of 4 that we correctly truncate the returned data
-						data.append(d[:self.size[0]*3])
-						#assert len(d) == len(d[:self.size[0]*3])
+						data.append(d)
+				
 				data = "".join(data[:self.size[1]])
 				self.im = Image.core.new(self.mode, self.size)
 				return self.fromstring(data)
