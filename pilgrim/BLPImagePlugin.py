@@ -55,12 +55,6 @@ class BLPImageFile(ImageFile.ImageFile):
 	format = "BLP"
 	format_description = "Blizzard Mipmap Format"
 	
-	def show(self): # HACK
-		path = "/home/adys/.cache/%s.jpg" % ("tmpVfBc3s")
-		self.save(path)
-		import os
-		os.popen("eog %s" % path)
-	
 	def __decode_blp1(self):
 		header = StringIO(self.fp.read(28 + 16*4 + 16*4))
 		
@@ -80,8 +74,6 @@ class BLPImageFile(ImageFile.ImageFile):
 			data = jpegHeader + data
 			data = StringIO(data)
 			image = JpegImageFile(data)
-			image.show()
-			raw_input()
 			self.tile = image.tile # PIL is terrible
 			self.fp = image.fp
 			self.mode = image.mode
@@ -89,7 +81,27 @@ class BLPImageFile(ImageFile.ImageFile):
 		
 		if compression == 1:
 			if encoding in (3, 4):
-				raise NotImplementedError
+				data = []
+				palette_data = self.fp.read(256*4)
+				palette = getpalette(palette_data)
+				length = self.size[0] * self.size[1] # lengths[0] is the total length of data + alpha data
+				_data = StringIO(self.fp.read(length))
+				alpha_data = StringIO(self.fp.read(length))
+				self.mode = "RGBA"
+				self.tile = []
+				while True:
+					try:
+						offset, = unpack("<B", _data.read(1))
+						a, = unpack("<B", alpha_data.read(1))
+					except StructError:
+						break
+					b, g, r, _ = palette[offset]
+					data.append(pack("<BBBB", r, g, b, a))
+				
+				data = "".join(data)
+				self.im = Image.core.new(self.mode, self.size)
+				self.fromstring(data)
+				return
 			
 			elif encoding == 5:
 				data = []
@@ -142,21 +154,17 @@ class BLPImageFile(ImageFile.ImageFile):
 					data.append(pack("<BBB", r, g, b))
 			
 			elif encoding == 2: # directx compression
-				print "reading as %s, alphaDepth of %i" % (("DXT1", "DXT3", "2", "3", "4", "5", "6", "DXT5")[alphaEncoding], alphaDepth)
+				self.mode = "RGBA"
+				
 				if alphaEncoding == 0: # DXT1
 					linesize = (self.size[0] + 3) / 4 * 8
 					for yb in xrange((self.size[1] + 3) / 4):
-						if alphaDepth:
-							self.mode = "RGBA"
-							decoded = _dxtc.decodeDXT1(self.fp.read(linesize), alpha=True)
-						else:
-							decoded = _dxtc.decodeDXT1(self.fp.read(linesize))
+						decoded = _dxtc.decodeDXT1(self.fp.read(linesize), alpha=alphaDepth)
 						for d in decoded:
 							data.append(d)
 				
 				elif alphaEncoding == 1: # DXT3
 					linesize = (self.size[0] + 3) / 4 * 16
-					self.mode = "RGBA"
 					for yb in xrange((self.size[1] + 3) / 4):
 						decoded = _dxtc.decodeDXT3(self.fp.read(linesize))
 						for d in decoded:
@@ -164,7 +172,6 @@ class BLPImageFile(ImageFile.ImageFile):
 				
 				elif alphaEncoding == 7: # DXT5
 					linesize = (self.size[0] + 3) / 4 * 16
-					self.mode = "RGBA"
 					for yb in xrange((self.size[1] + 3) / 4):
 						decoded = _dxtc.decodeDXT5(self.fp.read(linesize))
 						for d in decoded:
