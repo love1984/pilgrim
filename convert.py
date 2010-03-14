@@ -18,7 +18,10 @@ def main():
 		print "Converting...", f
 		flower = f.lower()
 		if flower.endswith(".blp"):
-			BLP(f).save(f+".png")
+			try:
+				BLP(f).save(f+".png")
+			except IOError:
+				BLP(f).save(f+".jpg")
 		elif flower.endswith(".ftc") or flower.endswith(".ftu"):
 			FTEX(f).save(f+".png")
 		else:
