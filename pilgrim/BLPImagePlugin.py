@@ -154,7 +154,7 @@ class BLPImageFile(ImageFile.ImageFile):
 					data.append(pack("<BBB", r, g, b))
 			
 			elif encoding == 2: # directx compression
-				self.mode = "RGBA"
+				self.mode = "RGBA" if alphaDepth else "RGB"
 				
 				if alphaEncoding == 0: # DXT1
 					linesize = (self.size[0] + 3) / 4 * 8
