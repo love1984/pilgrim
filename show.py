@@ -1,17 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys, os
-
+import os
+import sys
+from time import sleep
 from pilgrim.BLPImagePlugin import BLPImageFile as BLP
 from pilgrim.FTEXImagePlugin import FTEXImageFile as FTEX
+from pilgrim.utils import show
 
 usage = "Usage: %s image.{blp,ftc,...}" % (sys.argv[0])
 
-def show(img):
-	filename = "/tmp/DPdFJvcMX0VssrRHuv.png"
-	img.save(filename)
-	os.popen("eog %s" % (filename))
 
 def main():
 	try:
