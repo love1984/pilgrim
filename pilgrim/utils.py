@@ -5,5 +5,5 @@ def show(img, viewer="eog"):
 	tmp, filename = tempfile.mkstemp(suffix=".png")
 	img.save(filename)
 	subprocess.Popen([viewer, filename])
-	time.sleep(0.2)
-	os.remove(filename)
+	#time.sleep(0.2)
+	#os.remove(filename)
