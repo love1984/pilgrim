@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Independence War 2: Edge Of Chaos - Texture File Format
 Copyright © 2001 Particle Systems Ltd, All Rights Reserved.
@@ -22,14 +21,13 @@ interested in converting the game’s textures into an editable form, or who wan
 convert their own textures into the game’s optimal format.
 """
 
-import Image
-import ImageFile
-from struct import unpack
 from cStringIO import StringIO
+from PIL import Image, ImageFile
+from struct import unpack
 
-from decoders import dxtc
+from ..decoders import dxtc
 
-class FTEXImageFile(ImageFile.ImageFile):
+class FTEX(ImageFile.ImageFile):
 	"""
 	Texture File Format
 	The FTC and FTU texture files both use the same format, called. This
@@ -92,6 +90,6 @@ class FTEXImageFile(ImageFile.ImageFile):
 			else:
 				raise ValueError("Invalid texture format (expected 0 or 1, got %i)" % (format))
 
-Image.register_open("FTEX", FTEXImageFile)
+Image.register_open("FTEX", FTEX)
 Image.register_extension("FTEX", ".ftu") # uncompressed
 Image.register_extension("FTEX", ".ftc") # compressed

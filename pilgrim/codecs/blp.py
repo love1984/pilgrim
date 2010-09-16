@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Blizzard Mipmap Format
 
@@ -26,12 +25,12 @@ BLP files come in many different flavours:
   - DXT5 compression is used if alphaEncoding == 7.
 """
 
-import Image
-import ImageFile
+from PIL import Image, ImageFile
 from struct import pack, unpack, error as StructError
 from cStringIO import StringIO
 
-from decoders import dxtc as _dxtc
+from . import JPEG
+from ..decoders import dxtc
 
 
 def getpalette(data):
@@ -48,7 +47,7 @@ def getpalette(data):
 	return palette
 
 
-class BLPImageFile(ImageFile.ImageFile):
+class BLP(ImageFile.ImageFile):
 	"""
 	Blizzard Mipmap Format
 	"""
@@ -66,7 +65,6 @@ class BLPImageFile(ImageFile.ImageFile):
 		lengths = unpack("<16I", header.read(16*4))
 		
 		if compression == 0:
-			from PIL.JpegImagePlugin import JpegImageFile
 			jpegHeaderSize, = unpack("<I", self.fp.read(4))
 			jpegHeader = self.fp.read(jpegHeaderSize)
 			extraData = self.fp.read(offsets[0] - self.fp.tell()) # What IS this?
@@ -159,21 +157,21 @@ class BLPImageFile(ImageFile.ImageFile):
 				if alphaEncoding == 0: # DXT1
 					linesize = (self.size[0] + 3) / 4 * 8
 					for yb in xrange((self.size[1] + 3) / 4):
-						decoded = _dxtc.decodeDXT1(self.fp.read(linesize), alpha=alphaDepth)
+						decoded = dxtc.decodeDXT1(self.fp.read(linesize), alpha=alphaDepth)
 						for d in decoded:
 							data.append(d)
 				
 				elif alphaEncoding == 1: # DXT3
 					linesize = (self.size[0] + 3) / 4 * 16
 					for yb in xrange((self.size[1] + 3) / 4):
-						decoded = _dxtc.decodeDXT3(self.fp.read(linesize))
+						decoded = dxtc.decodeDXT3(self.fp.read(linesize))
 						for d in decoded:
 							data.append(d)
 				
 				elif alphaEncoding == 7: # DXT5
 					linesize = (self.size[0] + 3) / 4 * 16
 					for yb in xrange((self.size[1] + 3) / 4):
-						decoded = _dxtc.decodeDXT5(self.fp.read(linesize))
+						decoded = dxtc.decodeDXT5(self.fp.read(linesize))
 						for d in decoded:
 							data.append(d)
 				
@@ -196,6 +194,5 @@ class BLPImageFile(ImageFile.ImageFile):
 		
 		raise ValueError("not a BLP file (magic: %r)" % (magic))
 
-
-Image.register_open("BLP", BLPImageFile)
+Image.register_open("BLP", BLP)
 Image.register_extension("BLP", ".blp")

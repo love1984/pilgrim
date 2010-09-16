@@ -1,32 +1,34 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import sys
-from time import sleep
-from pilgrim.BLPImagePlugin import BLPImageFile as BLP
-from pilgrim.FTEXImagePlugin import FTEXImageFile as FTEX
-from pilgrim.utils import show
+from os.path import exists, splitext
+from pilgrim.utils import getDecoder, show
 
 usage = "Usage: %s image.{blp,ftc,...}" % (sys.argv[0])
-
 
 def main():
 	try:
 		args = sys.argv[1:]
 	except IndexError:
 		print usage
-		exit()
+		exit(1)
+	
+	files = []
 	for f in args:
-		flower = f.lower()
-		if flower.endswith(".blp"):
-			show(BLP(f))
-		elif flower.endswith(".ftc") or flower.endswith(".ftu"):
-			show(FTEX(f))
+		if not exists(f):
+			print "%r: No such file or directory" % (f)
+		
+		codec = getDecoder(f)
+		if codec:
+			print "Converting...", f
+			name, _ = splitext(f)
+			files.append(codec(f))
 		else:
 			print "Unknown file format for %s..." % (f)
 			print usage
-	exit()
+	
+	show(files)
 
 if __name__ == "__main__":
 	main()

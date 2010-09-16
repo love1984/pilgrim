@@ -20,9 +20,10 @@ def main():
 		
 		codec = getDecoder(f)
 		if codec:
-			print "Converting...", f
-			name, = splitext(f)
-			return codec(f).save(name + ".png")
+			print "Converting...", f,
+			name, ext = splitext(f)
+			codec(f).save(name + ".png")
+			print "=> %s.png" % (name)
 		else:
 			print "Unknown file format for %s..." % (f)
 			print usage

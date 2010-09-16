@@ -1,47 +1,42 @@
 # -*- coding: utf-8 -*-
-
 """
 A loader for (some) .DDS (DirectX8 texture) files
 The DDS file format is described (somewhat) at:
  http://msdn.microsoft.com/en-us/library/ee418142(VS.85).aspx
 The DTX1 texture format is described at:
  http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
-
 """
 
-import Image
-import ImageFile
+from PIL import Image, ImageFile
 from struct import unpack
 
-from decoders import dxt1
-
-dxt1Decoder = None
+from ..decoders import dxtc
 
 # dwFlags constants
-DDSD_CAPS = 1
-DDSD_HEIGHT = 2
-DDSD_WIDTH = 4
-DDSD_PITCH = 8
+DDSD_CAPS        = 1
+DDSD_HEIGHT      = 2
+DDSD_WIDTH       = 4
+DDSD_PITCH       = 8
 DDSD_PIXELFORMAT = 0x1000
 DDSD_MIPMAPCOUNT = 0x20000
-DDSD_LINEARSIZE = 0x80000
-DDSD_DEPTH = 0x800000
+DDSD_LINEARSIZE  = 0x80000
+DDSD_DEPTH       = 0x800000
 
 DDSD_EXPECTED = DDSD_CAPS + DDSD_HEIGHT + DDSD_WIDTH + DDSD_PIXELFORMAT
 
 # ddpfPixelFormat.dwFlags constants
 DDPF_ALPHAPIXELS = 1
-DDPF_FOURCC = 4
-DDPF_RGB = 0x40
+DDPF_FOURCC      = 4
+DDPF_RGB         = 0x40
 
 # ddsCaps.dwCaps1 constants
-DDSCAPS_COMPLEX = 8
-DDSCAPS_TEXTURE = 0x1000
-DDSCAPS_MIPMAP = 0x00400000
+DDSCAPS_COMPLEX  = 8
+DDSCAPS_TEXTURE  = 0x1000
+DDSCAPS_MIPMAP   = 0x400000
 
 DDSCAPS_EXPECTED = DDSCAPS_TEXTURE
 
-class DDSImageFile(ImageFile.ImageFile):
+class DDS(ImageFile.ImageFile):
 	format = "DDS"
 	format_description = "DirectX8 DDS texture file"
 	
@@ -98,7 +93,7 @@ class DDSImageFile(ImageFile.ImageFile):
 		baseoffset = 0
 		for yb in xrange((self.size[1] + 3) / 4):			 
 			linedata = self.fp.read(linesize)
-			decoded = dxt1.decodeDXT1(linedata) # returns 4-tuple of RGB lines
+			decoded = dxtc.decodeDXT1(linedata) # returns 4-tuple of RGB lines
 			for d in decoded:
 				# Make sure that if we have a texture size that's not a
 				# multiple of 4 that we correctly truncate the returned data
@@ -110,5 +105,5 @@ class DDSImageFile(ImageFile.ImageFile):
 		self.fromstring(data)
 		self._loaded = 1
 
-Image.register_open("DDS", DDSImageFile)
+Image.register_open("DDS", DDS)
 Image.register_extension("DDS", ".dds")

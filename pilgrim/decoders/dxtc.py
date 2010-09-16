@@ -2,7 +2,6 @@
 
 from struct import unpack
 
-
 def decodeDXT1(data, alpha=False):
 	"""
 	input: one "row" of data (i.e. will produce 4*width pixels)
