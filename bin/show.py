@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from pilgrim import utils
 
-usage = "Usage: %s image.{blp,ftc,...}" % (sys.argv[0])
+usage = "Usage: %s [FILE]..." % (sys.argv[0])
 
 def main():
 	if len(sys.argv) < 2:
