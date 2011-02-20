@@ -4,15 +4,21 @@ Utility functions for pilgrim
 """
 
 def __defaultopen(file):
-	import os, subprocess
-	if os.name == "mac":
-		return subprocess.call(("open", file))
-	if os.name == "nt":
-		return subprocess.call(("start", file))
-	if os.name == "posix":
-		return subprocess.call(("xdg-open", file))
+	import os, subprocess, sys
 	
-	raise NotImplementedError("Unsupported os: %r", os.name)
+	if os.name == "posix":
+		if sys.platform == "darwin":
+			cmd = "open"
+		
+		cmd = "xdg-open"
+	
+	elif os.name == "nt":
+		cmd = "start"
+	
+	else:
+		raise NotImplementedError("Unsupported os: %r", os.name)
+	
+	return subprocess.call((cmd, file))
 
 def show(files):
 	import tempfile
