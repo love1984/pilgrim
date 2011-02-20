@@ -25,6 +25,8 @@ def show(files):
 	
 	for img in files:
 		tmp, filename = tempfile.mkstemp(suffix=".png")
+		if img.mode == "CMYK":
+			img = img.convert("RGBA")
 		img.save(filename)
 		__defaultopen(filename)
 

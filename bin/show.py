@@ -24,6 +24,7 @@ def main():
 			print "Converting...", f
 			name, _ = os.path.splitext(f)
 			files.append(codec(f))
+		
 		else:
 			print "Unknown file format for %s..." % (f)
 			print usage
