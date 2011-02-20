@@ -25,9 +25,9 @@ BLP files come in many different flavours:
   - DXT5 compression is used if alphaEncoding == 7.
 """
 
+from cStringIO import StringIO
 from PIL import Image, ImageFile
 from struct import pack, unpack, error as StructError
-from cStringIO import StringIO
 from . import JPEG
 from ..decoders import dxtc
 

@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os.path
 import sys
-from os.path import exists, splitext
-from pilgrim.utils import getDecoder
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-usage = "Usage: %s image.{blp,ftc,...}" % (sys.argv[0])
+from pilgrim import utils
+
+usage = "Usage: %s [FILE]..." % (sys.argv[0])
 
 def main():
-	try:
-		args = sys.argv[1:]
-	except IndexError:
+	if len(sys.argv) < 2:
 		print usage
 		exit(1)
 	
-	for f in args:
-		if not exists(f):
+	for f in sys.argv[1:]:
+		if not os.path.exists(f):
 			print "%r: No such file or directory" % (f)
 		
-		codec = getDecoder(f)
+		codec = utils.getDecoder(f)
 		if codec:
 			print "Converting...", f,
-			name, ext = splitext(f)
+			name, ext = os.path.splitext(f)
 			codec(f).save(name + ".png")
 			print "=> %s.png" % (name)
 		else:

@@ -11,6 +11,7 @@ from PIL import Image, ImageFile
 from struct import unpack
 from ..decoders import dxtc
 
+
 # dwFlags constants
 DDSD_CAPS        = 1
 DDSD_HEIGHT      = 2
