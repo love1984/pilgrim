@@ -22,7 +22,7 @@ def __defaultopen(file):
 
 def show(files):
 	import tempfile
-	images = []
+	
 	for img in files:
 		tmp, filename = tempfile.mkstemp(suffix=".png")
 		img.save(filename)
@@ -31,11 +31,15 @@ def show(files):
 def getDecoder(filename):
 	from mime import MimeType
 	from . import codecs
+	
 	filename = filename.lower()
 	mime = MimeType.fromName(filename)
 	
 	if mime == "image/png":
 		return codecs.PNG
+	
+	if mime == "image/vnd.microsoft.icon":
+		return codecs.ICO
 	
 	if filename.endswith(".blp"):
 		return codecs.BLP

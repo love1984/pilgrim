@@ -3,6 +3,7 @@
 Codec list
 """
 
+from PIL.IcoImagePlugin import IcoImageFile as ICO
 from PIL.JpegImagePlugin import JpegImageFile as JPEG
 from PIL.PngImagePlugin import PngImageFile as PNG
 
