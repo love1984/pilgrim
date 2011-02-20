@@ -71,7 +71,7 @@ class BLP(ImageFile.ImageFile):
 			data = self.fp.read(lengths[0])
 			data = jpegHeader + data
 			data = StringIO(data)
-			image = JpegImageFile(data)
+			image = JPEG(data)
 			self.tile = image.tile # PIL is terrible
 			self.fp = image.fp
 			self.mode = image.mode
