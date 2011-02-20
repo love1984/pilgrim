@@ -4,9 +4,8 @@ Windows ICO file format.
 Based on BMP format.
 """
 
-from . import BMP
 from struct import unpack
-
+from . import BMP
 
 
 class ICO(BMP):

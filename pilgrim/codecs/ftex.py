@@ -24,8 +24,8 @@ convert their own textures into the game’s optimal format.
 from cStringIO import StringIO
 from PIL import Image, ImageFile
 from struct import unpack
-
 from ..decoders import dxtc
+
 
 class FTEX(ImageFile.ImageFile):
 	"""
@@ -56,14 +56,13 @@ class FTEX(ImageFile.ImageFile):
 	
 	Note: All data is stored in little-Endian (Intel) byte order.
 	"""
-	format = "FTEX"
-	format_description = "Texture File Format"
 	
 	def _open(self):
 		header = StringIO(self.fp.read(24))
 		magic = header.read(4)
 		if magic != "FTEX":
 			raise ValueError("not a FTEX file")
+		
 		version = unpack("i", header.read(4))
 		self.size = unpack("ii", header.read(8))
 		linesize = (self.size[0] + 3) / 4 * 8
@@ -73,6 +72,7 @@ class FTEX(ImageFile.ImageFile):
 		self.tile = []
 		for i in range(format_count):
 			format, where = unpack("ii", self.fp.read(8))
+			
 			if format == 0:
 				data = []
 				self.fp.seek(where)
@@ -85,11 +85,9 @@ class FTEX(ImageFile.ImageFile):
 				data = "".join(data[:self.size[1]])
 				self.im = Image.core.new(self.mode, self.size)
 				return self.fromstring(data)
+			
 			elif format == 1: # Uncompressed RGB
 				self.tile.append(("raw", (0, 0) + self.size, where+4, (self.mode, 0, 1)))
+			
 			else:
 				raise ValueError("Invalid texture format (expected 0 or 1, got %i)" % (format))
-
-Image.register_open("FTEX", FTEX)
-Image.register_extension("FTEX", ".ftu") # uncompressed
-Image.register_extension("FTEX", ".ftc") # compressed

@@ -9,7 +9,6 @@ The DTX1 texture format is described at:
 
 from PIL import Image, ImageFile
 from struct import unpack
-
 from ..decoders import dxtc
 
 # dwFlags constants
@@ -35,6 +34,7 @@ DDSCAPS_TEXTURE  = 0x1000
 DDSCAPS_MIPMAP   = 0x400000
 
 DDSCAPS_EXPECTED = DDSCAPS_TEXTURE
+
 
 class DDS(ImageFile.ImageFile):
 	format = "DDS"
@@ -75,6 +75,7 @@ class DDS(ImageFile.ImageFile):
 					self.load = self._loadDXTOpaque
 			else:
 				raise ValueError("Unsupported FOURCC mode: %s" % (pf_dwFourCC))
+		
 		else:
 			# XXX is this right? I don't have an uncompressed dds to play with
 			self.mode = "RGB"
@@ -104,6 +105,3 @@ class DDS(ImageFile.ImageFile):
 		self.im = Image.core.new(self.mode, self.size)
 		self.fromstring(data)
 		self._loaded = 1
-
-Image.register_open("DDS", DDS)
-Image.register_extension("DDS", ".dds")

@@ -28,7 +28,6 @@ BLP files come in many different flavours:
 from PIL import Image, ImageFile
 from struct import pack, unpack, error as StructError
 from cStringIO import StringIO
-
 from . import JPEG
 from ..decoders import dxtc
 
@@ -51,8 +50,6 @@ class BLP(ImageFile.ImageFile):
 	"""
 	Blizzard Mipmap Format
 	"""
-	format = "BLP"
-	format_description = "Blizzard Mipmap Format"
 	
 	def __decode_blp1(self):
 		header = StringIO(self.fp.read(28 + 16*4 + 16*4))
@@ -87,6 +84,7 @@ class BLP(ImageFile.ImageFile):
 				alpha_data = StringIO(self.fp.read(length))
 				self.mode = "RGBA"
 				self.tile = []
+				
 				while True:
 					try:
 						offset, = unpack("<B", _data.read(1))
@@ -143,6 +141,7 @@ class BLP(ImageFile.ImageFile):
 			if encoding == 1: # uncompressed
 				palette = getpalette(palette_data)
 				_data = StringIO(self.fp.read(lengths[0]))
+				
 				while True:
 					try:
 						offset, = unpack("<B", _data.read(1))
@@ -193,6 +192,3 @@ class BLP(ImageFile.ImageFile):
 			return self.__decode_blp2()
 		
 		raise ValueError("not a BLP file (magic: %r)" % (magic))
-
-Image.register_open("BLP", BLP)
-Image.register_extension("BLP", ".blp")
