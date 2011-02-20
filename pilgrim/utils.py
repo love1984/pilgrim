@@ -22,12 +22,17 @@ def show(files):
 		img.save(filename)
 		__defaultopen(filename)
 
-def getDecoder(file):
-	filename = file.lower()
+def getDecoder(filename):
+	from mime import MimeType
+	from . import codecs
+	filename = filename.lower()
+	mime = MimeType.fromName(filename)
+	
+	if mime == "image/png":
+		return codecs.PNG
+	
 	if filename.endswith(".blp"):
-		from codecs import BLP
-		return BLP
+		return codecs.BLP
 	
 	if filename.endswith(".ftc") or filename.endswith(".ftu"):
-		from codecs import FTEX
-		return FTEX
+		return codecs.FTEX
